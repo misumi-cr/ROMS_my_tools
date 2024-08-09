@@ -156,8 +156,8 @@ if __name__ == "__main__":
     files_a=sorted(glob.glob(f'{src_dir}/{case_name}.a.00[1-5].nc'))
     files_d=sorted(glob.glob(f'{src_dir}/{case_name}.d.00[1-5].nc'))
     
-    ds0_a=[process_file(f,variables_to_merge) for f in files_a]
-    ds0_d=[process_file(f,variables_to_merge) for f in files_d]
+    ds0_a=[process_file(f,variables_a) for f in files_a]
+    ds0_d=[process_file(f,variables_d) for f in files_d]
     
     # xarray.concatを使用してデータセットを結合
     ds0_a_concat=xr.concat(ds0a, dim='ocean_time')
