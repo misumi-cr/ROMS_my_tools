@@ -97,8 +97,8 @@ def compute_depth_layers(ds, grid, hmin=-0.1):
                                   transpose_coords=False).fillna(hmin)
     
     # interpolate depth of levels at U and V points
-    ds['z_u'] = grid.interp(ds['z_rho'], axis='X', boundary='fill')
-    ds['z_v'] = grid.interp(ds['z_rho'], axis='Y', boundary='fill')
+    ds['z_u'] = grid.interp(ds['z_rho'], 'X', boundary='fill')
+    ds['z_v'] = grid.interp(ds['z_rho'], 'Y', boundary='fill')
     
     # compute layer thickness as difference between interfaces
     ds['dz'] = grid.diff(ds['z_w'], 'Z')
@@ -157,7 +157,7 @@ if __name__ == "__main__":
                                   'Y': {'center': 'yh', 'outer': 'yq'},
                                   'Z': {'center': 's_rho', 'outer': 's_w'}},
               periodic=False)
-    ds0_concat=compute_depth_layers(ds0_concat,ds_grid)
+    ds0_concat=compute_depth_layers(ds0_concat,grid)
     #
     ## 結果をZarr形式で保存
     #ds0_concat.chunk({'ocean_time': 1}).to_zarr(f'{dst_dir}/{case_name}')
