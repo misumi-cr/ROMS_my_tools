@@ -150,18 +150,14 @@ if __name__ == "__main__":
     ds0_concat=xr.merge([ds0_concat,ds_grid])
     ds0_concat=rename_dims(ds0_concat)
 
-    for vname in ds0_concat.variables.keys():
-        print(vname)
+    ds0_concat=add_coords(ds0_concat)
+    ds0_concat=set_time(ds0_concat)
+    ds0_concat=ds0_concat.chunk({'time': 1})
+    grid=Grid(ds0_concat, coords={'X': {'center': 'xh', 'outer': 'xq'},
+                                  'Y': {'center': 'yh', 'outer': 'yq'},
+                                  'Z': {'center': 's_rho', 'outer': 's_w'}},
+              periodic=False)
+    ds0_concat=compute_depth_layers(ds0_concat,grid)
 
-
-#    ds0_concat=add_coords(ds0_concat)
-#    ds0_concat=set_time(ds0_concat)
-#    ds0_concat=ds0_concat.chunk({'time': 1})
-#    grid=Grid(ds0_concat, coords={'X': {'center': 'xh', 'outer': 'xq'},
-#                                  'Y': {'center': 'yh', 'outer': 'yq'},
-#                                  'Z': {'center': 's_rho', 'outer': 's_w'}},
-#              periodic=False)
-#    ds0_concat=compute_depth_layers(ds0_concat,grid)
-#
-#    # 結果をZarr形式で保存
-#    ds0_concat.chunk({'time': 1}).to_zarr(f'{dst_dir}/{case_name}')
+    # 結果をZarr形式で保存
+    ds0_concat.chunk({'time': 1}).to_zarr(f'{dst_dir}/{case_name}')
