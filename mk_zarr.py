@@ -4,12 +4,13 @@ import xarray as xr
 import dask
 import glob
 
-def process_file(file):
-    ds=xr.open_dataset(file, chunks={'ocean_time': -1})
-    return ds
-
+def process_file(file, variables_to_merge):
+    ds = xr.open_dataset(file, chunks={'time': -1})
+    # 指定された変数のみを選択
+    return ds[variables_to_merge]
 
 case_name='obtn_h040_s05.135'
+variables_to_merge = ['temp', 'salt']
 src_dir=f'/data44/misumi/roms_out/{case_name}/out'
 dst_dir=f'/data44/misumi/roms_zarr_test'
 
@@ -17,7 +18,7 @@ dst_dir=f'/data44/misumi/roms_zarr_test'
 files = sorted(glob.glob(f'{src_dir}/{case_name}.a.00[1-5].nc'))
 
 # 各ファイルに対して遅延処理を適用
-lazy_datasets = [dask.delayed(process_file)(f) for f in files]
+lazy_datasets = [dask.delayed(process_file)(f, variables_to_merge) for f in files]
 
 # 遅延オブジェクトを計算し、データセットのリストを取得
 datasets = dask.compute(*lazy_datasets)
