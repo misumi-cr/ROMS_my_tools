@@ -1,19 +1,41 @@
 #!/usr/bin/env python3
 
+
+def select_interior(ds):
+    """
+    discard "exterior" u,v,rho-points to build a symetric grid
+        Parameters:
+            ds (xarray.Dataset): ROMS dataset
+    """
+    ds = ds.isel(xi_rho=slice(1,-1), eta_rho=slice(1,-1))
+    if 'xi_v' in ds.dims:
+        ds = ds.isel(xi_v=slice(1,-1))
+    if 'eta_u' in ds.dims:
+        ds = ds.isel(eta_u=slice(1,-1))
+    return ds
+
 import xarray as xr
 import dask
 import glob
 import pandas as pd
 import numpy as np
+from xgcm import Grid
 
 def process_file(file, variables_to_merge):
     ds = xr.open_dataset(file, chunks={'ocean_time': -1})
     return ds[variables_to_merge]
 
+grid_name='/data44/misumi/obtn_zarr/obtn_mount_adcp-z5_grd-17cm_nearest_rx10.nc'
 case_name='obtn_h040_s05.135'
 variables_to_merge = ['temp', 'salt']
 src_dir=f'/data44/misumi/roms_out/{case_name}/out'
 dst_dir=f'/data44/misumi/roms_zarr_test'
+
+
+# グリッドファイル取得と処理
+ds_grid=xr.open_dataset(grid_name)
+ds_grid=ds_grid.drop_vars(['hraw','lon_vert','lat_vert','x_vert','y_vert','spherical'])
+ds_grid=select_interior(ds_grid)
 
 # ファイルリストを取得
 files = sorted(glob.glob(f'{src_dir}/{case_name}.a.00[1-5].nc'))
