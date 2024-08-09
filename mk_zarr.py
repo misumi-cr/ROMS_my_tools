@@ -123,7 +123,7 @@ def set_time(ds):
 if __name__ == "__main__":
 
     grid_name='/data44/misumi/obtn_zarr/obtn_mount_adcp-z5_grd-17cm_nearest_rx10.nc'
-    case_name='obtn_h040_s05.135'
+    case_name='obtn_h040_s05.151'
 
     variables_a=['temp', 'salt']
     variables_d=['pCO2']
@@ -153,8 +153,8 @@ if __name__ == "__main__":
     ds_grid=select_interior(ds_grid)
     
     # ファイルリストを取得
-    files_a=sorted(glob.glob(f'{src_dir}/{case_name}.a.00[1-5].nc'))
-    files_d=sorted(glob.glob(f'{src_dir}/{case_name}.d.00[1-5].nc'))
+    files_a=sorted(glob.glob(f'{src_dir}/{case_name}.a.00[12].nc'))
+    files_d=sorted(glob.glob(f'{src_dir}/{case_name}.d.00[12].nc'))
     
     ds0_a=[process_file(f,variables_a) for f in files_a]
     ds0_d=[process_file(f,variables_d) for f in files_d]
