@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-
+import xarray as xr
+import dask
+import glob
+import pandas as pd
+import numpy as np
+from xgcm import Grid
 
 def select_interior(ds):
     """
@@ -14,16 +19,13 @@ def select_interior(ds):
         ds = ds.isel(eta_u=slice(1,-1))
     return ds
 
-import xarray as xr
-import dask
-import glob
-import pandas as pd
-import numpy as np
-from xgcm import Grid
-
 def process_file(file, variables_to_merge):
     ds = xr.open_dataset(file, chunks={'ocean_time': -1})
     return ds[variables_to_merge]
+
+def process_grid(file):
+    ds = xr.open_dataset(file)
+    return ds
 
 grid_name='/data44/misumi/obtn_zarr/obtn_mount_adcp-z5_grd-17cm_nearest_rx10.nc'
 case_name='obtn_h040_s05.135'
@@ -38,22 +40,18 @@ ds_grid=ds_grid.drop_vars(['hraw','lon_vert','lat_vert','x_vert','y_vert','spher
 ds_grid=select_interior(ds_grid)
 
 # ファイルリストを取得
-files = sorted(glob.glob(f'{src_dir}/{case_name}.a.00[1-5].nc'))
+files=sorted(glob.glob(f'{src_dir}/{case_name}.a.00[1-5].nc'))
 
-# 各ファイルに対して遅延処理を適用
-lazy_datasets = [dask.delayed(process_file)(f, variables_to_merge) for f in files]
-
-# 遅延オブジェクトを計算し、データセットのリストを取得
-datasets = dask.compute(*lazy_datasets)
+ds0=[process_file(f, variables_to_merge) for f in files]
 
 # xarray.concatを使用してデータセットを結合
-concat_ds = xr.concat(datasets, dim='ocean_time')
+ds0_concat=xr.concat(ds0, dim='ocean_time')
 
-concat_ds = select_interior(concat_ds)
+ds0_concat = select_interior(ds0_concat)
 
 # 重複する時間を削除（必要な場合）
-unique_times = ~pd.Index(concat_ds.ocean_time.values).duplicated(keep='first')
-concat_ds = concat_ds.isel(ocean_time=unique_times)
+unique_times = ~pd.Index(ds0_concat.ocean_time.values).duplicated(keep='first')
+ds0_concat = ds0_concat.isel(ocean_time=unique_times)
 
 # 結果をZarr形式で保存
-concat_ds.chunk({'ocean_time': 1}).to_zarr(f'{dst_dir}/{case_name}')
+ds0_concat.chunk({'ocean_time': 1}).to_zarr(f'{dst_dir}/{case_name}')
