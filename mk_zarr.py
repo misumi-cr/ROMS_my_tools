@@ -124,8 +124,11 @@ if __name__ == "__main__":
 
     grid_name='/data44/misumi/obtn_zarr/obtn_mount_adcp-z5_grd-17cm_nearest_rx10.nc'
     case_name='obtn_h040_s05.135'
-    variables_to_merge=['temp', 'salt'] \
-                      +['Cs_r','Cs_w','hc','Vtransform','zeta'] # required to calculate depth
+
+    variables_a=['temp', 'salt']
+    variables_d=['pCO2']
+    variables_a=variables_a+['Cs_r','Cs_w','hc','Vtransform','zeta'] # required to calculate depth
+
     src_dir=f'/data44/misumi/roms_out/{case_name}/out'
     dst_dir=f'/data44/misumi/roms_zarr_test/{case_name}'
 
@@ -150,12 +153,16 @@ if __name__ == "__main__":
     ds_grid=select_interior(ds_grid)
     
     # ファイルリストを取得
-    files=sorted(glob.glob(f'{src_dir}/{case_name}.a.00[1-5].nc'))
+    files_a=sorted(glob.glob(f'{src_dir}/{case_name}.a.00[1-5].nc'))
+    files_d=sorted(glob.glob(f'{src_dir}/{case_name}.d.00[1-5].nc'))
     
-    ds0=[process_file(f,variables_to_merge) for f in files]
+    ds0_a=[process_file(f,variables_to_merge) for f in files_a]
+    ds0_d=[process_file(f,variables_to_merge) for f in files_d]
     
     # xarray.concatを使用してデータセットを結合
-    ds0_concat=xr.concat(ds0, dim='ocean_time')
+    ds0_a_concat=xr.concat(ds0a, dim='ocean_time')
+    ds0_d_concat=xr.concat(ds0d, dim='ocean_time')
+    ds0_concat=xr.merge([ds0_a_concat,ds0_d_concat])
     
     # 重複する時間を削除（必要な場合）
     unique_times = ~pd.Index(ds0_concat.ocean_time.values).duplicated(keep='first')
