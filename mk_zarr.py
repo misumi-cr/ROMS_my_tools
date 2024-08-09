@@ -5,7 +5,7 @@ import dask
 import glob
 
 def process_file(file, variables_to_merge):
-    ds = xr.open_dataset(file, chunks={'time': -1})
+    ds = xr.open_dataset(file, chunks={'ocean_time': -1})
     # 指定された変数のみを選択
     return ds[variables_to_merge]
 
