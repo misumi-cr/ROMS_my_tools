@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 from xgcm import Grid
 import datetime as dt
+import numpy.ma as ma
 
 def select_interior(ds):
     """
