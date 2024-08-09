@@ -127,7 +127,7 @@ if __name__ == "__main__":
     variables_to_merge=['temp', 'salt'] \
                       +['Cs_r','Cs_w','hc','Vtransform','zeta'] # required to calculate depth
     src_dir=f'/data44/misumi/roms_out/{case_name}/out'
-    dst_dir=f'/data44/misumi/roms_zarr_test'
+    dst_dir=f'/data44/misumi/roms_zarr_test/{case_name}'
 
     # ディレクトリが存在する場合、ユーザーに確認を求める
     if os.path.exists(dst_dir):
@@ -175,4 +175,4 @@ if __name__ == "__main__":
     ds0_concat=compute_depth_layers(ds0_concat,grid)
 
     # 結果をZarr形式で保存
-    ds0_concat.chunk({'time': 1}).to_zarr(f'{dst_dir}/{case_name}')
+    ds0_concat.chunk({'time': 1}).to_zarr(f'{dst_dir}')
