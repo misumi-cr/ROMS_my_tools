@@ -4,6 +4,7 @@ import xarray as xr
 import dask
 import glob
 import pandas as pd
+import numpy as np
 
 def process_file(file, variables_to_merge):
     ds = xr.open_dataset(file, chunks={'ocean_time': -1})
@@ -27,8 +28,8 @@ datasets = dask.compute(*lazy_datasets)
 concat_ds = xr.concat(datasets, dim='ocean_time')
 
 # 重複する時間を削除（必要な場合）
-_, index = pd.Index(concat_ds.ocean_time.values).duplicated(keep='first').nonzero()
-concat_ds = concat_ds.isel(ocean_time=index)
+unique_times = ~pd.Index(concat_ds.ocean_time.values).duplicated(keep='first')
+concat_ds = concat_ds.isel(ocean_time=unique_times)
 
 # 結果をZarr形式で保存
 concat_ds.chunk({'ocean_time': 1}).to_zarr(f'{dst_dir}/{case_name}')
