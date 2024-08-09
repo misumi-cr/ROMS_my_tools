@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import os
+import shutil
 import xarray as xr
 import dask
 import glob
@@ -126,6 +128,21 @@ if __name__ == "__main__":
                       +['Cs_r','Cs_w','hc','Vtransform','zeta'] # required to calculate depth
     src_dir=f'/data44/misumi/roms_out/{case_name}/out'
     dst_dir=f'/data44/misumi/roms_zarr_test'
+
+    # ディレクトリが存在する場合、ユーザーに確認を求める
+    if os.path.exists(dst_dir):
+        while True:
+            response = input(f"ディレクトリ '{dst_dir}' は既に存在します。削除しますか？ (y/n): ").lower()
+            if response in ['y', 'n']:
+                break
+            print("'y' または 'n' で回答してください。")
+    
+        if response == 'y':
+            print(f"ディレクトリ '{dst_dir}' を削除します。")
+            shutil.rmtree(dst_dir)
+        else:
+            print("処理を中止します。")
+            exit()
     
     # グリッドファイル取得と処理
     ds_grid=xr.open_dataset(grid_name)
