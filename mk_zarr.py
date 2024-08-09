@@ -159,6 +159,6 @@ if __name__ == "__main__":
               periodic=False)
     ds0_concat=compute_depth_layers(ds0_concat,grid)
 
-    print(ds_concat)
+    print(ds0_concat)
     ## 結果をZarr形式で保存
     #ds0_concat.chunk({'ocean_time': 1}).to_zarr(f'{dst_dir}/{case_name}')
