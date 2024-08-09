@@ -160,8 +160,8 @@ if __name__ == "__main__":
     ds0_d=[process_file(f,variables_d) for f in files_d]
     
     # xarray.concatを使用してデータセットを結合
-    ds0_a_concat=xr.concat(ds0a, dim='ocean_time')
-    ds0_d_concat=xr.concat(ds0d, dim='ocean_time')
+    ds0_a_concat=xr.concat(ds0_a, dim='ocean_time')
+    ds0_d_concat=xr.concat(ds0_d, dim='ocean_time')
     ds0_concat=xr.merge([ds0_a_concat,ds0_d_concat])
     
     # 重複する時間を削除（必要な場合）
