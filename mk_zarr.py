@@ -125,7 +125,7 @@ if __name__ == "__main__":
     grid_name='/data44/misumi/obtn_zarr/obtn_mount_adcp-z5_grd-17cm_nearest_rx10.nc'
     case_name='obtn_h040_s05.151'
 
-    variables_a=['temp','salt','PO4','NO3','SiO3','DIC','ALK','spChl','diatChl','diazChl','Huon','Huonsalt','HuonPO4','HuonNo3']
+    variables_a=['temp','salt','PO4','NO3','SiO3','DIC','ALK','spChl','diatChl','diazChl','Huon','Huonsalt','HuonPO4','HuonNO3']
     variables_d=['pCO2','photoC_sp','photoC_diat','photoC_diaz']
     variables_a=variables_a+['Cs_r','Cs_w','hc','Vtransform','zeta'] # required to calculate depth
 
