@@ -150,7 +150,7 @@ if __name__ == "__main__":
     ds0_concat=xr.merge([ds0_concat,ds_grid])
     ds0_concat=rename_dims(ds0_concat)
 
-    print(ds_concat)
+    print(ds0_concat)
     
 #    ds0_concat=add_coords(ds0_concat)
 #    ds0_concat=set_time(ds0_concat)
