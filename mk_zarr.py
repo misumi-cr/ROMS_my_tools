@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
     grid_name='/data44/misumi/obtn_zarr/obtn_mount_adcp-z5_grd-17cm_nearest_rx10.nc'
     case_name='obtn_h040_s05.135'
-    variables_to_merge = ['temp', 'salt']+['Cs_r','Cs_w','hc','h','Vtransform']
+    variables_to_merge = ['temp', 'salt']+['Cs_r','Cs_w','hc','Vtransform']
     src_dir=f'/data44/misumi/roms_out/{case_name}/out'
     dst_dir=f'/data44/misumi/roms_zarr_test'
     
