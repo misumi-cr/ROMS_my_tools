@@ -35,9 +35,6 @@ def rename_dims(ds):
 def process_file(file, variables_to_merge):
     ds = xr.open_dataset(file, chunks={'ocean_time': -1})
     return ds[variables_to_merge]
-#def process_file(file):
-#    ds = xr.open_dataset(file, chunks={'ocean_time': -1})
-#    return ds
 
 def process_grid(file):
     ds = xr.open_dataset(file)
@@ -53,27 +50,27 @@ def add_coords(ds):
                         'lat_rho', 'lat_v', 'lat_u', 'lat_psi'])
     return ds
 
-def flist_cut(flist):
-    newlist=[]
-    for f in flist:
-        wrk0=f.split("/")[-1]
-        wrk1=int(wrk0.split(".")[-2])
-        if wrk1>=99 and wrk1<=100:
-            newlist.append(f)
-    return newlist
+#def flist_cut(flist):
+#    newlist=[]
+#    for f in flist:
+#        wrk0=f.split("/")[-1]
+#        wrk1=int(wrk0.split(".")[-2])
+#        if wrk1>=99 and wrk1<=100:
+#            newlist.append(f)
+#    return newlist
 
-def append_time(store_name):
-    ds0=xr.open_zarr(store_name)
-    ds1=xr.Dataset()
-    mdl_time=[]
-    fig_time=[]
-    for tm in ds0["time"].data:
-        mdl_time.append(dt.datetime(2000+tm.year,tm.month,tm.day,tm.hour,0,0))
-        fig_time.append(dt.datetime(2004,tm.month,tm.day,tm.hour,0,0))
-    ds1["mdl_time"]=xr.DataArray(np.array(mdl_time),dims=["time"])
-    ds1["fig_time"]=xr.DataArray(np.array(fig_time),dims=["time"])
-    ds1=ds1.set_coords(["mdl_time","fig_time"])
-    ds1.to_zarr(store_name,mode="a")
+#def append_time(store_name):
+#    ds0=xr.open_zarr(store_name)
+#    ds1=xr.Dataset()
+#    mdl_time=[]
+#    fig_time=[]
+#    for tm in ds0["time"].data:
+#        mdl_time.append(dt.datetime(2000+tm.year,tm.month,tm.day,tm.hour,0,0))
+#        fig_time.append(dt.datetime(2004,tm.month,tm.day,tm.hour,0,0))
+#    ds1["mdl_time"]=xr.DataArray(np.array(mdl_time),dims=["time"])
+#    ds1["fig_time"]=xr.DataArray(np.array(fig_time),dims=["time"])
+#    ds1=ds1.set_coords(["mdl_time","fig_time"])
+#    ds1.to_zarr(store_name,mode="a")
 
 def compute_depth_layers(ds, grid, hmin=-0.1):
     """ compute depths of ROMS vertical levels (Vtransform = 2) """
