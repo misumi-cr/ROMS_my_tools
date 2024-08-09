@@ -46,6 +46,8 @@ ds0=[process_file(f, variables_to_merge) for f in files]
 
 # xarray.concatを使用してデータセットを結合
 ds0_concat=xr.concat(ds0, dim='ocean_time')
+ds0_concat=select_interior(ds0_concat)
+ds0_concat=xr.merge([ds0_concat,ds_grid])
 
 ds0_concat = select_interior(ds0_concat)
 
