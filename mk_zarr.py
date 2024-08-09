@@ -97,8 +97,8 @@ def compute_depth_layers(ds, grid, hmin=-0.1):
                                   transpose_coords=False).fillna(hmin)
     
     # interpolate depth of levels at U and V points
-    ds['z_u'] = grid.interp(ds['z_rho'], 'X', boundary='fill')
-    ds['z_v'] = grid.interp(ds['z_rho'], 'Y', boundary='fill')
+    ds['z_u'] = grid.interp(ds['z_rho'], axis='X', boundary='fill')
+    ds['z_v'] = grid.interp(ds['z_rho'], axis='Y', boundary='fill')
     
     # compute layer thickness as difference between interfaces
     ds['dz'] = grid.diff(ds['z_w'], 'Z')
