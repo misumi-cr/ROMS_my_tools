@@ -150,7 +150,7 @@ if __name__ == "__main__":
     ds0_concat=xr.merge([ds0_concat,ds_grid])
     ds0_concat=rename_dims(ds0_concat)
 
-    for vname in ds0.variables.keys():
+    for vname in ds0_concat.variables.keys():
         print(vname)
 
 
