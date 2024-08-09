@@ -19,6 +19,17 @@ def select_interior(ds):
         ds = ds.isel(eta_u=slice(1,-1))
     return ds
 
+def rename_dims(ds):
+    """ rename dimensions
+        Parameters:
+            ds (xarray.Dataset): ROMS dataset
+    """
+    ds = ds.rename({'xi_rho': 'xh', 'xi_v': 'xh', 'xi_u': 'xq', 'xi_psi': 'xq',
+                    'eta_rho': 'yh', 'eta_v': 'yq', 'eta_u': 'yh', 'eta_psi': 'yq',
+                    'ocean_time': 'time'
+                    })
+    return ds
+
 def process_file(file, variables_to_merge):
     ds = xr.open_dataset(file, chunks={'ocean_time': -1})
     return ds[variables_to_merge]
@@ -48,8 +59,7 @@ ds0=[process_file(f, variables_to_merge) for f in files]
 ds0_concat=xr.concat(ds0, dim='ocean_time')
 ds0_concat=select_interior(ds0_concat)
 ds0_concat=xr.merge([ds0_concat,ds_grid])
-
-ds0_concat = select_interior(ds0_concat)
+ds0_concat=rename_dims(ds0_concat)
 
 # 重複する時間を削除（必要な場合）
 unique_times = ~pd.Index(ds0_concat.ocean_time.values).duplicated(keep='first')
