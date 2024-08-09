@@ -49,6 +49,8 @@ datasets = dask.compute(*lazy_datasets)
 # xarray.concatを使用してデータセットを結合
 concat_ds = xr.concat(datasets, dim='ocean_time')
 
+concat_ds = select_interior(concat_ds)
+
 # 重複する時間を削除（必要な場合）
 unique_times = ~pd.Index(concat_ds.ocean_time.values).duplicated(keep='first')
 concat_ds = concat_ds.isel(ocean_time=unique_times)
