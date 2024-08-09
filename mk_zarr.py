@@ -26,7 +26,7 @@ datasets = dask.compute(*lazy_datasets)
 merged_ds = xr.merge(datasets, compat='equals', join='outer')
 
 # 重複する時間を削除（必要な場合）
-merged_ds = merged_ds.sel(time=~merged_ds.indexes['time'].duplicated(keep='first'))
+merged_ds = merged_ds.sel(time=~merged_ds.indexes['ocean_time'].duplicated(keep='first'))
 
 # 結果をZarr形式で保存
-merged_ds.chunk({'time': 100}).to_zarr(f'{dst_dir}/{case_name}')
+merged_ds.chunk({'ocean_time': 1}).to_zarr(f'{dst_dir}/{case_name}')
