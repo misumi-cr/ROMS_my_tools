@@ -13,7 +13,7 @@ src_dir='/data44/misumi/roms_out/obtn_h040_s05.135/out'
 dst_dir='/data44/misumi/roms_zarr_test'
 
 # ファイルリストを取得
-files = sorted(glob.glob(f'{src_dir}/obtn_h040_s05.135.a.00[1-5.nc'))
+files = sorted(glob.glob(f'{src_dir}/obtn_h040_s05.135.a.00[1-5].nc'))
 
 print(files)
 
