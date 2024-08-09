@@ -62,9 +62,9 @@ ds0_concat=xr.concat(ds0, dim='ocean_time')
 unique_times = ~pd.Index(ds0_concat.ocean_time.values).duplicated(keep='first')
 ds0_concat = ds0_concat.isel(ocean_time=unique_times)
 
-#ds0_concat=select_interior(ds0_concat)
-#ds0_concat=xr.merge([ds0_concat,ds_grid])
-#ds0_concat=rename_dims(ds0_concat)
+ds0_concat=select_interior(ds0_concat)
+ds0_concat=xr.merge([ds0_concat,ds_grid])
+ds0_concat=rename_dims(ds0_concat)
 #
 ## 結果をZarr形式で保存
 #ds0_concat.chunk({'ocean_time': 1}).to_zarr(f'{dst_dir}/{case_name}')
