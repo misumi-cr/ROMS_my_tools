@@ -47,14 +47,17 @@ def add_coords(ds):
         Parameters:
             ds (xarray.Dataset): ROMS dataset
     """
-    ds = ds.set_coords(['Cs_r', 'Cs_w', 'hc', 'h', 'Vtransform', 'time',
+#    ds = ds.set_coords(['Cs_r', 'Cs_w', 'hc', 'h', 'Vtransform', 'time',
+#                        'lon_rho', 'lon_v', 'lon_u', 'lon_psi',
+#                        'lat_rho', 'lat_v', 'lat_u', 'lat_psi'])
+    ds = ds.set_coords(['Cs_r', 'Cs_w', 'hc', 'h',
                         'lon_rho', 'lon_v', 'lon_u', 'lon_psi',
                         'lat_rho', 'lat_v', 'lat_u', 'lat_psi'])
     return ds
 
 def compute_depth_layers(ds, grid, hmin=-0.1):
     """ compute depths of ROMS vertical levels (Vtransform = 2) """
-    
+
     # compute vertical transformation functional
     S_rho = (ds.hc * ds.s_rho + ds.Cs_r * ds.h) / (ds.hc + ds.h)
     S_w = (ds.hc * ds.s_w + ds.Cs_w * ds.h) / (ds.hc + ds.h)
@@ -62,10 +65,10 @@ def compute_depth_layers(ds, grid, hmin=-0.1):
     # compute depth of rho (layers) and w (interfaces) points
     z_rho = ds.zeta + (ds.zeta + ds.h) * S_rho
     z_w = ds.zeta + (ds.zeta + ds.h) * S_w
-    
+
     z_rho.data=ma.masked_outside(z_rho.data,-1.e4,1.e4)
     z_w.data=ma.masked_outside(z_w.data,-1.e4,1.e4)
-    
+
     # transpose arrays and fill NaNs with a minimal depth
     ds['z_rho'] = z_rho.transpose(*('time', 's_rho','yh','xh'),
                                   transpose_coords=False).fillna(hmin)
@@ -79,9 +82,9 @@ def compute_depth_layers(ds, grid, hmin=-0.1):
     
     # compute layer thickness as difference between interfaces
     ds['dz'] = grid.diff(ds['z_w'], 'Z')
-    
-    # add z_rho and z_w to xarray coordinates
-    ds = ds.set_coords(['z_rho', 'z_w', 'z_v', 'z_u'])
+#    
+#    # add z_rho and z_w to xarray coordinates
+#    ds = ds.set_coords(['z_rho', 'z_w', 'z_v', 'z_u'])
     
     return ds
 
@@ -100,16 +103,19 @@ def set_time(ds):
 
 if __name__ == "__main__":
 
-    grid_name='/data44/misumi/obtn_zarr/obtn_mount_adcp-z5_grd-17cm_nearest_rx10.nc'
-    case_name='obtn_h040_s05.151'
+    dask.config.set(**{'array.slicing.split_large_chunks': True})  # True: optimize chunk automatically
 
-    variables_a=['temp','salt','PO4','NO3','SiO3','DIC','ALK','spChl','diatChl','diazChl',\
-                 'Huon','Huonsalt','HuonPO4','HuonNO3','Hvom','Hvomsalt','HvomPO4','HvomNO3']
-    variables_d=['pCO2','photoC_sp','photoC_diat','photoC_diaz']
-    variables_a=variables_a+['Cs_r','Cs_w','hc','Vtransform','zeta'] # required to calculate depth
+    grid_name='grd/Grd_slope500m_231020.nc'
+    case_name='simple_004trc'
 
-    src_dir=f'/data44/misumi/roms_out/{case_name}/out'
-    dst_dir=f'/data44/misumi/obtn_zarr/{case_name}'
+    variables=['temp','salt','dye_01']
+    variables=variables+['zeta'] # required to calculate depth
+
+    src_dir=f'/data45/misumi/roms_out/{case_name}'
+    dst_dir=f'/data45/misumi/roms_zarr/{case_name}'
+
+    # input files
+    flist=sorted(glob.glob(f'{src_dir}/{case_name}.a.00[12].nc'))
 
     # ディレクトリが存在する場合、ユーザーに確認を求める
     if os.path.exists(dst_dir):
@@ -128,36 +134,27 @@ if __name__ == "__main__":
     
     # グリッドファイル取得と処理
     ds_grid=xr.open_dataset(grid_name)
-    ds_grid=ds_grid.drop_vars(['hraw','lon_vert','lat_vert','x_vert','y_vert','spherical'])
     ds_grid=select_interior(ds_grid)
+    drop_vars=list(ds_grid.variables) # grid variables were obtained from the grid file, making a list to eliminate from the data files
     
-    # ファイルリストを取得
-    files_a=sorted(glob.glob(f'{src_dir}/{case_name}.a.00[12].nc'))
-    files_d=sorted(glob.glob(f'{src_dir}/{case_name}.d.00[12].nc'))
-    
-    ds0_a=[process_file(f,variables_a) for f in files_a]
-    ds0_d=[process_file(f,variables_d) for f in files_d]
+    ds0=[process_file(f,variables) for f in flist]
     
     # xarray.concatを使用してデータセットを結合
-    ds0_a_concat=xr.concat(ds0_a, dim='ocean_time')
-    ds0_d_concat=xr.concat(ds0_d, dim='ocean_time')
-    ds0_concat=xr.merge([ds0_a_concat,ds0_d_concat])
-    
-    # 重複する時間を削除（必要な場合）
-    unique_times = ~pd.Index(ds0_concat.ocean_time.values).duplicated(keep='first')
-    ds0_concat = ds0_concat.isel(ocean_time=unique_times)
-    
+    ds0_concat=xr.concat(ds0, dim='ocean_time')
+    ds0_concat=ds0_concat.drop_vars(drop_vars,errors='ignore') # ignore errors due to eliminating variables that are not listed on drop_vars
+
     ds0_concat=select_interior(ds0_concat)
     ds0_concat=xr.merge([ds0_concat,ds_grid])
     ds0_concat=rename_dims(ds0_concat)
-
     ds0_concat=add_coords(ds0_concat)
     ds0_concat=set_time(ds0_concat)
+
     ds0_concat=ds0_concat.chunk({'time': 1})
     grid=Grid(ds0_concat, coords={'X': {'center': 'xh', 'outer': 'xq'},
                                   'Y': {'center': 'yh', 'outer': 'yq'},
                                   'Z': {'center': 's_rho', 'outer': 's_w'}},
               periodic=False)
+
     ds0_concat=compute_depth_layers(ds0_concat,grid)
 
     # 結果をZarr形式で保存
